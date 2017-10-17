@@ -210,11 +210,11 @@ const char *i2s_register_name[] = {"CS_A", "FIFO_A", "MODE_A", "RXC_A", "TXC_A",
 #define CM_PCMDIV_DIVF_LSB_OFFSET   0           /* DIVI bits 0:11 */
 #define CM_PCMDIV_DIVI_LSB_OFFSET   12          /* DIVI bits 12:23 */
 
-/* default values */
-#define CM_PCMCTRL_SRC_DEF      1   /* CM_PCMCTRL clock src setting, default to using the 19.2MHz osc (shown on schmatics as 19M2) */
-#define CM_PCMCTRL_MASH_DEF     0   /* CM_PCMCTRL clock mash setting *default to no mash, so just using integer divider */
-#define CM_PCMDIV_DIVI_DEF      10; /* CM_PCMDIV DIVI setting, note, frequency on module should not exceed 25MHz, so dont let the PLLs driver high frequencies as it might damage the module */
-#define CM_PCMDIV_DIVF_DEF      1;  /* CM_PCMDIV DIVF setting */
+/* clock user values */
+#define CM_PCMCTRL_SRC_DEF      5   /* CM_PCMCTRL clock src setting, default to using the 19.2MHz osc (shown on schmatics as 19M2) */
+#define CM_PCMCTRL_MASH_DEF     1   /* CM_PCMCTRL clock mash setting *default to no mash, so just using integer divider */
+#define CM_PCMDIV_DIVI_DEF      354; /* CM_PCMDIV DIVI setting, note, frequency on module should not exceed 25MHz, so dont let the PLLs driver high frequencies as it might damage the module */
+#define CM_PCMDIV_DIVF_DEF      1260;  /* CM_PCMDIV DIVF setting */
 
 /* defines for supported clock sources src */
 #define CM_PCMCTRL_SRC_OSC          1
@@ -782,12 +782,10 @@ static int i2st_cm_pcm_clk_init(bcm2835_i2s_t* ctx)
     }
 
     i2st_cm_pcmdiv_set(ctx, cm_pcmdiv);
-/*
+
     cm_pcmctrl |= cm_pcmctrl_mash << CM_PCMCTRL_MASH_LSB_OFFSET | cm_pcmctrl_src << CM_PCMCTRL_SRC_LSB_OFFSET;
     cm_pcmdiv |= cm_pcmdiv_divi << CM_PCMDIV_DIVI_LSB_OFFSET | cm_pcmdiv_divf << CM_PCMDIV_DIVF_LSB_OFFSET;
-*/
-    cm_pcmctrl |= 0x05|1<<9;
-    cm_pcmdiv |= 354<<12|1261;
+
     /* set up the cm_pcm registers without enabling the clock */
     i2st_cm_pcmctrl_set(ctx, cm_pcmctrl);
     i2st_cm_pcmdiv_set(ctx, cm_pcmdiv);
@@ -796,8 +794,8 @@ static int i2st_cm_pcm_clk_init(bcm2835_i2s_t* ctx)
     usleep(10);
 
     /* now enable the clock*/
- //   cm_pcmctrl |= cm_pcmctrl_mash << CM_PCMCTRL_MASH_LSB_OFFSET | cm_pcmctrl_src << CM_PCMCTRL_SRC_LSB_OFFSET | cm_pcmctrl_enab << CM_PCMCTRL_ENAB_LSB_OFFSET;
-    cm_pcmctrl |= 0x05|1<<9|0x10; 
+    cm_pcmctrl |= cm_pcmctrl_mash << CM_PCMCTRL_MASH_LSB_OFFSET | cm_pcmctrl_src << CM_PCMCTRL_SRC_LSB_OFFSET | cm_pcmctrl_enab << CM_PCMCTRL_ENAB_LSB_OFFSET;
+
     i2st_cm_pcmctrl_set(ctx, cm_pcmctrl);
     ret = i2st_cm_pcmctrl_wait_busy(ctx);
     if(ret < 0)
